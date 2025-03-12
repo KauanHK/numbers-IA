@@ -1,56 +1,56 @@
 import numpy as np
+from numpy.typing import NDArray
 import matplotlib.pyplot as plt
 from data import get_mnist
 
 
-def sigmoid(x: int | float) -> float:
+def sigmoid(x: int | float):
     return 1 / (1 + np.exp(-x))
 
 
-weights_input_hidden = np.random.uniform(-0.5, 0.5, (16, 784))
-weights_hidden_output = np.random.uniform(-0.5, 0.5, (10, 16))
-bias_input_hidden = np.zeros((16, 1))
-bias_hidden_output = np.zeros((10, 1))
+class NeuralNetwork:
 
-images, labels = get_mnist()
+    def __init__(self, learning_rate: float = 0.01) -> None:
 
-LEARNING_RATE = 0.01
-i = 0
-for image, label in zip(images, labels):
+        self.learning_rate = learning_rate
+        self.weights_input_hidden = np.random.uniform(-0.5, 0.5, (16, 784))
+        self.weights_hidden_output = np.random.uniform(-0.5, 0.5, (10, 16))
+        self.bias_input_hidden = np.zeros((16, 1))
+        self.bias_hidden_output = np.zeros((10, 1))
 
-    image = image.reshape(-1, 1)
-    label = label.reshape(-1, 1)
+    def forward(self, image: NDArray, label: NDArray) -> tuple[NDArray, NDArray]:
 
-    print(i, end = '\r')
-    i += 1
+        image = image.reshape(-1, 1)
+        label = label.reshape(-1, 1)
 
-    # Forward
-    hidden_layer = sigmoid(weights_input_hidden @ image + bias_input_hidden)
-    output = sigmoid(weights_hidden_output @ hidden_layer + bias_hidden_output)
+        hidden_layer = sigmoid(self.weights_input_hidden @ image + self.bias_input_hidden)
+        output = sigmoid(self.weights_hidden_output @ hidden_layer + self.bias_hidden_output)
 
-    # Backpropagation
-    cost_output = output - label
-    weights_hidden_output += -LEARNING_RATE * cost_output @ np.transpose(hidden_layer)
-    bias_hidden_output += -LEARNING_RATE * cost_output
+        return hidden_layer, output
 
-    cost_hidden = np.transpose(weights_hidden_output) @ cost_output * (hidden_layer * (1 - hidden_layer))
-    weights_input_hidden += -LEARNING_RATE * cost_hidden @ np.transpose(image)
-    bias_input_hidden += -LEARNING_RATE * cost_hidden
+    def backpropagation(self, image: NDArray, label: NDArray, hidden: NDArray, output: NDArray) -> None:
 
+        cost_output = output - label
+        self.weights_hidden_output += -self.learning_rate * cost_output @ np.transpose(hidden)
+        self.bias_hidden_output += -self.learning_rate * cost_output
 
-while True:
+        cost_hidden = np.transpose(self.weights_hidden_output) @ cost_output * (hidden * (1 - hidden))
+        self.weights_input_hidden += -self.learning_rate * cost_hidden @ np.transpose(image)
+        self.bias_input_hidden += -self.learning_rate * cost_hidden
 
-    index = int(input("Enter a number (0 - 59999): "))
-    img = images[index]
-    plt.imshow(img.reshape(28, 28), cmap="Greys")
+    def train(self) -> None:
 
-    img.shape += (1,)
-    # Forward propagation input -> hidden
-    h_pre = bias_input_hidden + weights_input_hidden @ img.reshape(784, 1)
-    h = 1 / (1 + np.exp(-h_pre))
-    # Forward propagation hidden -> output
-    o_pre = bias_hidden_output + weights_hidden_output @ h
-    o = 1 / (1 + np.exp(-o_pre))
+        self.images, self.labels = get_mnist()
 
-    plt.title(f"Dígito previsto: {o.argmax()}")
-    plt.savefig(f"digit{index}.png")
+        i = 1
+        for image, label in zip(self.images, self.labels):
+            hidden, output = self.forward(image, label)
+            self.backpropagation(image, label, hidden, output)
+            i += 1
+            if i % 1000 == 0:
+                print(f'{i:.}/60.000', end = '\r')
+
+    def predict(self, image: NDArray) -> int:
+
+        hidden_layer = sigmoid(self.weights_input_hidden @ image.reshape(784, 1) + self.bias_input_hidden)
+        return sigmoid(self.weights_hidden_output @ hidden_layer + self.bias_hidden_output).argmax()
