@@ -42,10 +42,11 @@ class NeuralNetwork:
             self._images, self._labels = get_mnist()
         return self._labels
 
-    def forward(self, image: NDArray, label: NDArray) -> tuple[NDArray, NDArray]:
+    def forward(self, image: NDArray) -> tuple[NDArray, NDArray]:
         """Propagação da imagem pela rede neural. Retorna um tupla com 
         os valores da camada oculta e da camada de saída.
         
+        :param image: NDArray da imagem do MNIST (784, 1)
         :returns: hidden_layer, output
         """
 
