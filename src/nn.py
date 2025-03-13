@@ -1,6 +1,5 @@
 import numpy as np
 from numpy.typing import NDArray
-import matplotlib.pyplot as plt
 from data import get_mnist
 
 
@@ -79,6 +78,7 @@ class NeuralNetwork:
         self._bias_hidden += -self._learning_rate * cost_hidden
 
     def train(self) -> None:
+        """Treina a rede neural com as imagens do MNIST e retorna None."""
 
         i = 1
         for image, label in zip(self.images, self.labels):
@@ -93,6 +93,10 @@ class NeuralNetwork:
                 print(f'{i}/60.000', end = '\r')
 
     def predict(self, image: NDArray) -> int:
+        """Retorna o dígito previsto na imagem.
+        
+        :param image: NDArray da imagem do MNIST (784, 1)
+        """
 
         hidden_layer = sigmoid(self._weights_hidden @ image.reshape(784, 1) + self._bias_hidden)
         return sigmoid(self._weights_output @ hidden_layer + self._bias_output).argmax()
