@@ -73,7 +73,7 @@ class NeuralNetwork:
         self._bias_output += -self._learning_rate * cost_output
 
         # Erro da camada oculta
-        # (784, 16) @ (10, 1) x (16, 1) = (16, 1)
+        # (16, 10) @ (10, 1) x (16, 1) = (16, 1)
         cost_hidden = np.transpose(self._weights_output) @ cost_output * (hidden * (1 - hidden))
         self._weights_hidden += -self._learning_rate * cost_hidden @ np.transpose(image)
         self._bias_hidden += -self._learning_rate * cost_hidden
