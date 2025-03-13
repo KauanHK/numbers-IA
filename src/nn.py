@@ -78,20 +78,29 @@ class NeuralNetwork:
         self._weights_hidden += -self._learning_rate * cost_hidden @ np.transpose(image)
         self._bias_hidden += -self._learning_rate * cost_hidden
 
-    def train(self) -> None:
+    def train(self, epochs: int = 1) -> None:
         """Treina a rede neural com as imagens do MNIST e retorna None."""
 
-        i = 1
-        for image, label in zip(self.images, self.labels):
+        correct_predictions = 0
+        for _ in range(epochs):
+            i = 0
+            for image, label in zip(self.images, self.labels):
 
-            image = image.reshape(-1, 1)
-            label = label.reshape(-1, 1)
+                image = image.reshape(-1, 1)
+                label = label.reshape(-1, 1)
 
-            hidden, output = self.forward(image, label)
-            self.backpropagation(image, label, hidden, output)
-            i += 1
-            if i % 1000 == 0:
-                print(f'{i}/60.000', end = '\r')
+                hidden, output = self.forward(image)
+
+                if output.argmax() == label.argmax():
+                    correct_predictions += 1
+
+                self.backpropagation(image, label, hidden, output)
+                i += 1
+                if i % 1000 == 0:
+                    print(f'{correct_predictions/i * 100:.1f}%', end='\r')
+
+            print()
+            correct_predictions = 0
 
     def predict(self, image: NDArray) -> int:
         """Retorna o dígito previsto na imagem.
